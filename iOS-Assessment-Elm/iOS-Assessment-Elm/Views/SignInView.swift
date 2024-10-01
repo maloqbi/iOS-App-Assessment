@@ -7,7 +7,7 @@ struct SignInView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            Text("Welcome Back")
+            Text("Welcome")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .padding(.top, 50)
