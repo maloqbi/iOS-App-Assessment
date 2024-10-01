@@ -19,7 +19,15 @@ class LoginViewModel: ObservableObject {
         }
     }
     
+
     private var cancellables = Set<AnyCancellable>()
+    private let apiService: APIService
+    private let keychainService: KeychainService
+    
+    init(apiService: APIService = APIService.shared, keychainService: KeychainService = KeychainService.shared) {
+            self.apiService = apiService
+            self.keychainService = keychainService
+        }
     
     
     func login() {
@@ -27,17 +35,16 @@ class LoginViewModel: ObservableObject {
             loginResult = "Username or Password is empty"
             return
         }
-        
+
         isLoggingIn = true
         loginResult = nil
-        
-        
-        APIService.shared.login(username: username, password: password)
+
+        apiService.login(username: username, password: password)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .failure(let error):
-                    print("Error: \(error.localizedDescription)")
+                    print("Failure in login: \(error.localizedDescription)")
                     self.loginResult = "Login failed: \(error.localizedDescription)"
                 case .finished:
                     break
@@ -46,13 +53,10 @@ class LoginViewModel: ObservableObject {
             }, receiveValue: { response in
                 self.isLoggedIn = true
                 self.loginResult = "Login Successful. Token: \(response.token)"
-                
-                
-                KeychainService.shared.saveToken(response.token)
+                self.keychainService.saveToken(response.token)
             })
             .store(in: &cancellables)
     }
-    
     
     private func validateForm() {
         
